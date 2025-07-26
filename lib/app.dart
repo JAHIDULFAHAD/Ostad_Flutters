@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:ostad_flutter/assignment.dart';
 import 'package:ostad_flutter/stack.dart';
 
+import 'alert_message.dart';
+
 class MyApp extends StatelessWidget {
   const MyApp ({super.key});
 
@@ -9,7 +11,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'First App',
-      home:Assignment(),
+      home:AlertMessage(),
     );
   }
 }
