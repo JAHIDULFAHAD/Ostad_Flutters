@@ -13,7 +13,7 @@ class DrawerTabbar extends StatelessWidget {
       child: Scaffold(
         appBar:AppBar(
           title: Text("Demo"),
-          backgroundColor: Colors.blueGrey,
+          backgroundColor: Colors.cyan,
           centerTitle: true,
           bottom: TabBar(tabs: [
             Tab(
@@ -91,7 +91,6 @@ class DrawerTabbar extends StatelessWidget {
                 onTap: (){},
               ),
               Divider(color: Colors.blue,)
-      
             ],
           ),
         ),
