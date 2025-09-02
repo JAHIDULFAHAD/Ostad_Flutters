@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ostad_flutter/Counter_App.dart';
 import 'package:ostad_flutter/assignment.dart';
 import 'package:ostad_flutter/facebook_login.dart';
 import 'package:ostad_flutter/own_widget.dart';
@@ -53,7 +54,7 @@ class MyApp extends StatelessWidget {
       //   '/fb':(context)=>FacebookLogin(),
       //   '/input':(context)=>UserInput(),
       // },
-      home: OwnWidget(),
+      home: CounterApp(),
     );
   }
 }
