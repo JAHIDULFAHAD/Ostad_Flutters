@@ -11,9 +11,12 @@ import 'Ui/Screen/update_profile_screen.dart';
 class TaskManager extends StatelessWidget {
   const TaskManager({super.key});
 
+  static GlobalKey<NavigatorState> navigator = GlobalKey<NavigatorState>();
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigator,
       theme: ThemeData(
         textTheme: TextTheme(
           titleLarge: TextStyle(

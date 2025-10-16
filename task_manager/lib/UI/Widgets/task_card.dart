@@ -1,49 +1,140 @@
 import 'package:flutter/material.dart';
-class TaskCard extends StatelessWidget {
-  const TaskCard({
-    super.key, required this.title, required this.description, required this.date, required this.status,
-  });
-  final String title;
-  final String description;
-  final String date;
-  final String status;
+import 'package:task_manager/Data/Models/task_model.dart';
+import 'package:task_manager/Data/Services/api_caller.dart';
+import 'package:task_manager/Data/Utils/urls.dart';
+import 'package:task_manager/Ui/Widgets/snack_bar_message.dart';
+
+class TaskCard extends StatefulWidget {
+  const TaskCard({super.key, required this.taskModel, required this.refreshParent});
+
+  final TaskModel taskModel;
+  final VoidCallback refreshParent;
+
+  @override
+  State<TaskCard> createState() => _TaskCardState();
+}
+
+class _TaskCardState extends State<TaskCard> {
+  bool _changeStatusInProgress = false;
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       tileColor: Colors.white,
-      title: Text(title),
+      title: Text(widget.taskModel.title),
       subtitle: Column(
         spacing: 6,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(description),
-          Text("Date: $date",style: TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.w600
-          ),),
+          Text(widget.taskModel.description),
+          Text(
+            "Date: ${widget.taskModel.createdDate}",
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
+          ),
           Row(
             children: [
               Chip(
-                label: Text(status),backgroundColor: Colors.blue,
-                labelStyle: TextStyle(
-                    color: Colors.white
-                ),
+                label: Text(widget.taskModel.status),
+                backgroundColor: Colors.blue,
+                labelStyle: TextStyle(color: Colors.white),
                 padding: EdgeInsets.symmetric(horizontal: 16),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24)
+                  borderRadius: BorderRadius.circular(24),
                 ),
               ),
               Spacer(),
-              IconButton(onPressed: (){}, icon: Icon(Icons.delete),color: Colors.grey,),
-              IconButton(onPressed: (){}, icon: Icon(Icons.edit),color: Colors.grey,)
+              IconButton(
+                onPressed: () {},
+                icon: Icon(Icons.delete),
+                color: Colors.grey,
+              ),
+              Visibility(
+                visible: _changeStatusInProgress==false,
+                replacement: CircularProgressIndicator(),
+                child: IconButton(
+                  onPressed: () {
+                    _showChangeStatusDialog();
+                  },
+                  icon: Icon(Icons.edit),
+                  color: Colors.grey,
+                ),
+              ),
             ],
-          )
+          ),
         ],
       ),
     );
+  }
+
+  void _showChangeStatusDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text('Change Status'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                onTap: () {
+                  _changeStatus('New');
+                },
+                title: Text('New'),
+                trailing: widget.taskModel.status == 'New'
+                    ? Icon(Icons.done)
+                    : null,
+              ),
+              ListTile(
+                onTap: () {
+                  _changeStatus('Progress');
+                },
+                title: Text('Progress'),
+                trailing: widget.taskModel.status == 'Progress'
+                    ? Icon(Icons.done)
+                    : null,
+              ),
+              ListTile(
+                onTap: () {
+                  _changeStatus('Cancelled');
+                },
+                title: Text('Cancelled'),
+                trailing: widget.taskModel.status == 'Cancelled'
+                    ? Icon(Icons.done)
+                    : null,
+              ),
+              ListTile(
+                onTap: () {
+                  _changeStatus('Completed');
+                },
+                title: Text('Completed'),
+                trailing: widget.taskModel.status == 'Completed'
+                    ? Icon(Icons.done)
+                    : null,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _changeStatus(String status) async {
+    if(status == widget.taskModel.status){
+      return ;
+    }
+    Navigator.pop(context);
+    _changeStatusInProgress = true;
+    setState(() {});
+    final ApiResponse response = await ApiCaller.getRequest(
+      url: Urls.updateTaskStatusUrl(widget.taskModel.id, status),
+    );
+    _changeStatusInProgress = false;
+    setState(() {});
+    if(response.isSuccess){
+      widget.refreshParent();
+    } else {
+      showSnackbarMessage(context, response.errorMessage!);
+    }
   }
 }

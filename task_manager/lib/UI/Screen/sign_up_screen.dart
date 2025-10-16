@@ -1,7 +1,10 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:task_manager/Data/Services/api_caller.dart';
+import 'package:task_manager/Data/Utils/urls.dart';
 import 'package:task_manager/Ui/Widgets/screen_background.dart';
+import 'package:task_manager/Ui/Widgets/snack_bar_message.dart';
 
 import 'login_screen.dart';
 class SignUpScreen extends StatefulWidget {
@@ -19,6 +22,8 @@ class _LoginScreenState extends State<SignUpScreen> {
   final TextEditingController _lastnameController = TextEditingController();
   final TextEditingController _phonenumberController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _signUpInProgress = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -113,8 +118,14 @@ class _LoginScreenState extends State<SignUpScreen> {
                     SizedBox(
                       height: 16,
                     ),
-                    FilledButton(onPressed: _onTapSubmitButton,
-                        child: Icon(Icons.arrow_circle_right_outlined,size: 20,)
+                    Visibility(
+                      visible: _signUpInProgress == false,
+                      replacement: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                      child: FilledButton(onPressed: _onTapSubmitButton,
+                          child: Icon(Icons.arrow_circle_right_outlined,size: 20,)
+                      ),
                     ),
                     SizedBox(
                       height: 36,
@@ -144,13 +155,47 @@ class _LoginScreenState extends State<SignUpScreen> {
   }
   void _onTapSubmitButton(){
     if(_formKey.currentState!.validate()){
-
+      _signUp();
     }
   }
   void _onTapLoginButton(){
     Navigator.pushNamedAndRemoveUntil(context,
         LoginScreen.name,(Prediacte)=>false,);
   }
+  Future<void> _signUp() async {
+    _signUpInProgress=true;
+    setState(() {
+    });
+    Map<String,dynamic> requestBody={
+      "email":_emailController.text.trim(),
+      "firstName":_firstnameController.text.trim(),
+      "lastName":_lastnameController.text.trim(),
+      "mobile":_phonenumberController.text.trim(),
+      "password":_passwordController.text
+    };
+    final ApiResponse response =await ApiCaller.postRequest(
+      url: Urls.registrationUrl,
+      body: requestBody
+    );
+    _signUpInProgress =false;
+    setState(() {
+    });
+    if(response.isSuccess){
+      _clearTextFields();
+      showSnackbarMessage(context, 'Registration success! Please login.');
+    } else{
+      showSnackbarMessage(context, response.errorMessage!);
+    }
+
+  }
+  void _clearTextFields(){
+    _emailController.clear();
+    _passwordController.clear();
+    _firstnameController.clear();
+    _lastnameController.clear();
+    _phonenumberController.clear();
+  }
+
   dispose(){
     _emailController.dispose();
     _passwordController.dispose();
