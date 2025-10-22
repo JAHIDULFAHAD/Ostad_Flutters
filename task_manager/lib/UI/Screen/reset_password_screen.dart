@@ -1,11 +1,17 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:task_manager/Data/Services/api_caller.dart';
 import 'package:task_manager/Ui/Screen/login_screen.dart';
 import 'package:task_manager/Ui/Screen/sign_up_screen.dart';
 import 'package:task_manager/Ui/Widgets/screen_background.dart';
+
+import '../../Data/Utils/urls.dart';
+import '../Widgets/snack_bar_message.dart';
 class ResetPasswordScreen extends StatefulWidget {
-  const ResetPasswordScreen({super.key});
+  const ResetPasswordScreen({super.key, required this.email, required this.otp});
+  final String email;
+  final String otp;
   static const String name = '/resetpassword';
 
   @override
@@ -16,6 +22,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmpasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _changePasswordInProgress = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,6 +32,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             padding: const EdgeInsets.all(20.0),
             child: Form(
               key: _formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -41,6 +49,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       decoration: InputDecoration(
                         hintText: 'New Password',
                       ),
+                      validator: (String? value) {
+                        if ((value?.length ?? 0) <= 6) {
+                          return 'Password should more than 6 characters';
+                        }
+                        return null;
+                      },
                     ),
                     SizedBox(height: 24,),
                     TextFormField(
@@ -48,12 +62,29 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       decoration: InputDecoration(
                         hintText: 'Confirm New Password',
                       ),
+                      validator: (String? value) {
+                        if ((value?.length ?? 0) <= 6) {
+                          return 'Password should more than 6 characters';
+                        } else {
+                          if (_passwordController.text.trim() !=
+                              _confirmpasswordController.text.trim()) {
+                            return 'Password does not match';
+                          }
+                          return null;
+                        };
+                      }
                     ),
                     SizedBox(
                       height: 16,
                     ),
-                    FilledButton(onPressed: _onTapConfirmButton,
-                      child: Text('Confirm'),
+                    Visibility(
+                      visible: _changePasswordInProgress == false,
+                      replacement: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                      child: FilledButton(onPressed: _onTapConfirmButton,
+                        child: Text('Confirm'),
+                      ),
                     ),
                     SizedBox(
                       height: 36,
@@ -86,8 +117,33 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         LoginScreen.name,(Prediacte)=>false,);
   }
   void _onTapConfirmButton(){
-    Navigator.pushNamedAndRemoveUntil(context,
-      LoginScreen.name,(Prediacte)=>false,);
+    if(_formKey.currentState!.validate()){
+      _changePassword();
+    }
+  }
+  Future<void> _changePassword() async {
+    _changePasswordInProgress=true;
+    setState(() {
+    });
+    Map<String,dynamic> requestBody={
+      "email":widget.email,
+      "OTP":widget.otp,
+      "password": _passwordController.text.trim(),
+    };
+    final ApiResponse response = await ApiCaller.postRequest(
+      url: Urls.changePasswordUrl,
+      body: requestBody,
+    );
+    _changePasswordInProgress=false;
+    setState(() {
+    });
+
+    if(response.isSuccess){
+      showSnackbarMessage(context, 'Password changed successfully');
+      Navigator.pushReplacementNamed(context, LoginScreen.name,);
+    }else {
+      showSnackbarMessage(context, response.errorMessage!);
+    }
   }
   dispose(){
     _passwordController.dispose();

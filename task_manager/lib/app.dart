@@ -62,8 +62,6 @@ class TaskManager extends StatelessWidget {
         MainNavBarHolderScreen.name : (_) => MainNavBarHolderScreen(),
         UpdateProfileScreen.name : (_) => UpdateProfileScreen(),
         FrogetPasswordVerifyEmailScreen.name : (_) => FrogetPasswordVerifyEmailScreen(),
-        FrogetPasswordVerifyOtpScreen.name : (_) => FrogetPasswordVerifyOtpScreen(),
-        ResetPasswordScreen.name : (_) => ResetPasswordScreen(),
 
 
 

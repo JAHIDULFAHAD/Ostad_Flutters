@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:task_manager/Data/Models/user_model.dart';
 
@@ -7,14 +8,21 @@ class AuthController {
   static const String _accessTokenkey = 'token';
   static const String _userModelkey = 'model';
 
+
   static String? accessToken;
   static UserModel? userModel;
+
 
   static Future<void> saveUserData(UserModel model,String token) async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     await sharedPreferences.setString(_accessTokenkey, token);
     await sharedPreferences.setString(_userModelkey, jsonEncode(model.toJson()));
     accessToken = token;
+    userModel = model;
+  }
+  static Future<void> updateUserData(UserModel model) async{
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    await sharedPreferences.setString(_userModelkey, jsonEncode(model.toJson()));
     userModel = model;
   }
   static Future<void> getUserData() async {

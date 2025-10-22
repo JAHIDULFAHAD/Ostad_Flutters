@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:task_manager/Ui/Controllers/auth_controller.dart';
 import 'package:task_manager/Ui/Screen/login_screen.dart';
@@ -18,6 +20,7 @@ class TMAppBar extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _TMAppBarState extends State<TMAppBar> {
+  final profilePhoto = AuthController.userModel!.photo;
   @override
   Widget build(BuildContext context) {
     return AppBar(
@@ -35,7 +38,11 @@ class _TMAppBarState extends State<TMAppBar> {
         child: Row(
           spacing: 8,
           children: [
-            CircleAvatar(),
+            CircleAvatar(
+              child: profilePhoto.isNotEmpty
+                  ? Image.memory(base64Decode(profilePhoto))
+                  : Icon(Icons.person),
+            ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -70,6 +77,4 @@ class _TMAppBarState extends State<TMAppBar> {
       (predicate) => false,
     );
   }
-
-
 }
