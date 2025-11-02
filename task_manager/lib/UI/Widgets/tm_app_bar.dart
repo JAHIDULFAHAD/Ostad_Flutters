@@ -1,62 +1,57 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:task_manager/Ui/Controllers/auth_controller.dart';
 import 'package:task_manager/Ui/Screen/login_screen.dart';
-
 import '../Screen/update_profile_screen.dart';
 
-class TMAppBar extends StatefulWidget implements PreferredSizeWidget {
-  const TMAppBar({super.key, this.fromUpdateProfile});
-
+class TMAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool? fromUpdateProfile;
 
-  @override
-  State<TMAppBar> createState() => _TMAppBarState();
+  const TMAppBar({super.key, this.fromUpdateProfile});
 
   @override
-  // TODO: implement preferredSize
   Size get preferredSize => Size.fromHeight(kToolbarHeight);
-}
 
-class _TMAppBarState extends State<TMAppBar> {
-  final profilePhoto = AuthController.userModel!.photo;
   @override
   Widget build(BuildContext context) {
+    final userModel = context.watch<AuthController>().userModel;
+    final profilePhoto = userModel?.photo ?? '';
+
     return AppBar(
       backgroundColor: Colors.green,
       title: GestureDetector(
         onTap: () {
-          if (widget.fromUpdateProfile ?? false) {
-            return;
-          }
+          if (fromUpdateProfile ?? false) return;
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => UpdateProfileScreen()),
+            MaterialPageRoute(builder: (_) => UpdateProfileScreen()),
           );
         },
         child: Row(
-          spacing: 8,
           children: [
             CircleAvatar(
               child: profilePhoto.isNotEmpty
                   ? Image.memory(base64Decode(profilePhoto))
                   : Icon(Icons.person),
             ),
+            SizedBox(width: 8),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  AuthController.userModel?.fullName ?? '',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleSmall?.copyWith(color: Colors.white),
+                  userModel?.fullName ?? '',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleSmall
+                      ?.copyWith(color: Colors.white),
                 ),
                 Text(
-                  AuthController.userModel?.email ?? '',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: Colors.white),
+                  userModel?.email ?? '',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: Colors.white),
                 ),
               ],
             ),
@@ -64,17 +59,18 @@ class _TMAppBarState extends State<TMAppBar> {
         ),
       ),
       actions: [
-        IconButton(onPressed: _signOut, icon: Icon(Icons.logout_outlined)),
+        IconButton(
+          onPressed: () async {
+            await context.read<AuthController>().clearUserData();
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              LoginScreen.name,
+                  (predicate) => false,
+            );
+          },
+          icon: Icon(Icons.logout_outlined),
+        ),
       ],
-    );
-  }
-
-  Future<void> _signOut() async {
-    await AuthController.clearUserData();
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      LoginScreen.name,
-      (predicate) => false,
     );
   }
 }

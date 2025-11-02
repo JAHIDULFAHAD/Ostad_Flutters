@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:task_manager/Data/Models/task_model.dart';
-import 'package:task_manager/Data/Services/api_caller.dart';
-import 'package:task_manager/Data/Utils/urls.dart';
 import 'package:task_manager/Ui/Widgets/snack_bar_message.dart';
+
+import '../Controllers/task_change_status_provider.dart';
+import '../Controllers/task_delete_provider.dart';
 
 class TaskCard extends StatefulWidget {
   const TaskCard({super.key, required this.taskModel, required this.refreshParent});
@@ -15,62 +17,72 @@ class TaskCard extends StatefulWidget {
 }
 
 class _TaskCardState extends State<TaskCard> {
-  bool _changeStatusInProgress = false;
-  bool _deleteStatusInProgress = false;
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      tileColor: Colors.white,
-      title: Text(widget.taskModel.title),
-      subtitle: Column(
-        spacing: 6,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(widget.taskModel.description),
-          Text(
-            "Date: ${widget.taskModel.createdDate}",
-            style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
-          ),
-          Row(
+    return Builder(
+      builder: (context) {
+        return ListTile(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          tileColor: Colors.white,
+          title: Text(widget.taskModel.title),
+          subtitle: Column(
+            spacing: 6,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Chip(
-                label: Text(widget.taskModel.status),
-                backgroundColor: Colors.blue,
-                labelStyle: TextStyle(color: Colors.white),
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                ),
+              Text(widget.taskModel.description),
+              Text(
+                "Date: ${widget.taskModel.createdDate}",
+                style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
               ),
-              Spacer(),
-              Visibility(
-                visible: _deleteStatusInProgress==false,
-                replacement: CircularProgressIndicator(),
-                child: IconButton(
-                  onPressed: () {
-                    _deleteStatus();
-                  },
-                  icon: Icon(Icons.delete),
-                  color: Colors.grey,
-                ),
-              ),
-              Visibility(
-                visible: _changeStatusInProgress==false,
-                replacement: CircularProgressIndicator(),
-                child: IconButton(
-                  onPressed: () {
-                    _showChangeStatusDialog();
-                  },
-                  icon: Icon(Icons.edit),
-                  color: Colors.grey,
-                ),
+              Row(
+                children: [
+                  Chip(
+                    label: Text(widget.taskModel.status),
+                    backgroundColor: Colors.blue,
+                    labelStyle: TextStyle(color: Colors.white),
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                  Spacer(),
+                  Consumer<TaskDeleteProvider>(
+                    builder: (context, deleteProvider, _) {
+                      return Visibility(
+                        visible: deleteProvider.deleteStatusInProgress==false,
+                        replacement: CircularProgressIndicator(),
+                        child: IconButton(
+                          onPressed: () {
+                            _deleteStatus(context);
+                          },
+                          icon: Icon(Icons.delete),
+                          color: Colors.grey,
+                        ),
+                      );
+                    }
+                  ),
+                  Consumer<TaskChangeStatusProvider>(
+                    builder: (context, changeStatusProvider, _) {
+                      return Visibility(
+                        visible: changeStatusProvider.changeStatusInProgress==false,
+                        replacement: CircularProgressIndicator(),
+                        child: IconButton(
+                          onPressed: () {
+                            _showChangeStatusDialog();
+                          },
+                          icon: Icon(Icons.edit),
+                          color: Colors.grey,
+                        ),
+                      );
+                    }
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
+        );
+      }
     );
   }
 
@@ -130,32 +142,20 @@ class _TaskCardState extends State<TaskCard> {
     if(status == widget.taskModel.status){
       return ;
     }
-    Navigator.pop(context);
-    _changeStatusInProgress = true;
-    setState(() {});
-    final ApiResponse response = await ApiCaller.getRequest(
-      url: Urls.updateTaskStatusUrl(widget.taskModel.id, status),
-    );
-    _changeStatusInProgress = false;
-    setState(() {});
-    if(response.isSuccess){
+    bool isSucces = await context.read<TaskChangeStatusProvider>().changeStatus(context: context, id: widget.taskModel.id, status: status);
+    if(isSucces){
       widget.refreshParent();
+      Navigator.pop(context);
     } else {
-      showSnackbarMessage(context, response.errorMessage!);
+      showSnackbarMessage(context, context.read<TaskChangeStatusProvider>().errorMessage);
     }
   }
-  Future<void> _deleteStatus() async {
-    _deleteStatusInProgress = true;
-    setState(() {});
-    final ApiResponse response = await ApiCaller.getRequest(
-      url: Urls.deleteTaskStatusUrl(widget.taskModel.id),
-    );
-    _deleteStatusInProgress = false;
-    setState(() {});
-    if(response.isSuccess){
+  Future<void> _deleteStatus(context) async {
+    bool isSucces = await context.read<TaskDeleteProvider>().deleteStatus(widget.taskModel.id);
+    if(isSucces){
       widget.refreshParent();
     } else {
-      showSnackbarMessage(context, response.errorMessage!);
+      showSnackbarMessage(context, context.read<TaskDeleteProvider>().errorMessage);
     }
   }
 }

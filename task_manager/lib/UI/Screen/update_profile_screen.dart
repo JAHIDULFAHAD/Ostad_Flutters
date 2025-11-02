@@ -1,16 +1,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
-
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:task_manager/Data/Models/user_model.dart';
 import 'package:task_manager/Ui/Widgets/screen_background.dart';
 import 'package:task_manager/Ui/Widgets/tm_app_bar.dart';
 
-import '../../Data/Services/api_caller.dart';
-import '../../Data/Utils/urls.dart';
 import '../Controllers/auth_controller.dart';
+import '../Controllers/update_profile_provider.dart';
 import '../Widgets/photo_picker_field.dart';
 import '../Widgets/snack_bar_message.dart';
 
@@ -19,24 +17,24 @@ class UpdateProfileScreen extends StatefulWidget {
   static const String name = '/updateprofile';
 
   @override
-  State<UpdateProfileScreen> createState() => _LoginScreenState();
+  State<UpdateProfileScreen> createState() => _UpdateProfileScreenState();
 }
 
-class _LoginScreenState extends State<UpdateProfileScreen> {
+class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _firstnameController = TextEditingController();
   final TextEditingController _lastnameController = TextEditingController();
   final TextEditingController _phonenumberController = TextEditingController();
+
   final _formKey = GlobalKey<FormState>();
   final ImagePicker _imagePicker = ImagePicker();
   XFile? _selectedImage;
-  bool _updateProfileInProgress = false;
 
   @override
   void initState() {
     super.initState();
-    UserModel user = AuthController.userModel!;
+    final UserModel user = context.read<AuthController>().userModel!;
     _emailController.text = user.email;
     _firstnameController.text = user.firstName;
     _lastnameController.text = user.lastName;
@@ -46,100 +44,102 @@ class _LoginScreenState extends State<UpdateProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: TMAppBar(fromUpdateProfile: true),
+      appBar: const TMAppBar(fromUpdateProfile: true),
       body: ScreenBackground(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Form(
-              key: _formKey,
-              autovalidateMode: AutovalidateMode.onUserInteraction,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 90),
-                  Text(
-                    'Update Profile',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  SizedBox(height: 24),
-                  PhotoPickerField(
-                    onTap: _pickImage,
-                    selectedPhoto: _selectedImage,
-                  ),
-                  SizedBox(height: 24),
-                  TextFormField(
-                    controller: _emailController,
-                    textInputAction: TextInputAction.next,
-                    decoration: InputDecoration(hintText: 'Email'),
-                    enabled: false,
-                  ),
-                  SizedBox(height: 24),
-                  TextFormField(
-                    controller: _firstnameController,
-                    textInputAction: TextInputAction.next,
-                    decoration: InputDecoration(hintText: 'First Name'),
-                    validator: (String? value) {
-                      if (value?.trim().isEmpty ?? true) {
-                        return 'Please enter first name';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 24),
-                  TextFormField(
-                    controller: _lastnameController,
-                    textInputAction: TextInputAction.next,
-                    decoration: InputDecoration(hintText: 'Last Name'),
-                    validator: (String? value) {
-                      if (value?.trim().isEmpty ?? true) {
-                        return 'Please enter last name';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 24),
-                  TextFormField(
-                    controller: _phonenumberController,
-                    keyboardType: TextInputType.phone,
-                    textInputAction: TextInputAction.next,
-                    decoration: InputDecoration(hintText: 'Phone Number'),
-                    validator: (String? value) {
-                      if (value?.trim().isEmpty ?? true) {
-                        return 'Please enter phone number';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-                  TextFormField(
-                    controller: _passwordController,
-                    decoration: InputDecoration(
-                      hintText: 'Password (optional)',
-                    ),
-                    validator: (String? value) {
-                      if (value != null &&
-                          value.isNotEmpty &&
-                          value.length < 6) {
-                        return 'Please enter password more than 6 characters';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-                  Visibility(
-                    visible: _updateProfileInProgress == false,
-                    replacement: Center(child: CircularProgressIndicator()),
-                    child: FilledButton(
-                      onPressed: () {
-                        _onTapSubmitButton();
-                      },
-                      child: Icon(Icons.arrow_circle_right_outlined, size: 20),
-                    ),
-                  ),
-                  SizedBox(height: 36),
-                ],
-              ),
+          padding: const EdgeInsets.all(20.0),
+          child: Form(
+            key: _formKey,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 90),
+                Text(
+                  'Update Profile',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 24),
+                PhotoPickerField(
+                  onTap: _pickImage,
+                  selectedPhoto: _selectedImage,
+                ),
+                const SizedBox(height: 24),
+                TextFormField(
+                  controller: _emailController,
+                  textInputAction: TextInputAction.next,
+                  decoration: const InputDecoration(hintText: 'Email'),
+                  enabled: false,
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: _firstnameController,
+                  textInputAction: TextInputAction.next,
+                  decoration: const InputDecoration(hintText: 'First Name'),
+                  validator: (value) {
+                    if (value?.trim().isEmpty ?? true) {
+                      return 'Please enter first name';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: _lastnameController,
+                  textInputAction: TextInputAction.next,
+                  decoration: const InputDecoration(hintText: 'Last Name'),
+                  validator: (value) {
+                    if (value?.trim().isEmpty ?? true) {
+                      return 'Please enter last name';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: _phonenumberController,
+                  keyboardType: TextInputType.phone,
+                  textInputAction: TextInputAction.next,
+                  decoration: const InputDecoration(hintText: 'Phone Number'),
+                  validator: (value) {
+                    if (value?.trim().isEmpty ?? true) {
+                      return 'Please enter phone number';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration:
+                  const InputDecoration(hintText: 'Password (optional)'),
+                  validator: (value) {
+                    if (value != null && value.isNotEmpty && value.length < 6) {
+                      return 'Password must be at least 6 characters long';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+                Consumer<UpdateProfileProvider>(
+                  builder: (context, provider, _) {
+                    return Visibility(
+                      visible: !provider.getUpdateProfileInProgress,
+                      replacement: const Center(
+                          child: CircularProgressIndicator()),
+                      child: FilledButton(
+                        onPressed: _onTapSubmitButton,
+                        child: const Icon(
+                          Icons.arrow_circle_right_outlined,
+                          size: 20,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 36),
+              ],
             ),
           ),
         ),
@@ -147,71 +147,48 @@ class _LoginScreenState extends State<UpdateProfileScreen> {
     );
   }
 
-  void _onTapSubmitButton() {
+  void _onTapSubmitButton() async {
     if (_formKey.currentState!.validate()) {
-      _updateProfile();
-    }
-  }
-
-  Future<void> _updateProfile() async {
-    _updateProfileInProgress = true;
-    setState(() {});
-    final Map<String, dynamic> requestBody = {
-      'email': _emailController.text,
-      'firstName': _firstnameController.text.trim(),
-      'lastName': _lastnameController.text,
-      'mobile': _phonenumberController.text,
-    };
-    if (_passwordController.text.isNotEmpty) {
-      requestBody['password'] = _passwordController.text;
-    }
-    String? encodedPhoto;
-    if (_selectedImage != null) {
-      List<int> bytes = await _selectedImage!.readAsBytes();
-      encodedPhoto = base64Encode(bytes);
-      requestBody['image'] = encodedPhoto;
-    }
-    final ApiResponse response = await ApiCaller.postRequest(
-      url: Urls.updateProfileUrl,
-      body: requestBody,
-    );
-    _updateProfileInProgress = false;
-    setState(() {});
-
-    if (response.isSuccess) {
-      _passwordController.clear();
-      UserModel model = UserModel(
-        id: AuthController.userModel!.id,
-        email: _emailController.text,
-        firstName: _firstnameController.text.trim(),
-        lastName: _lastnameController.text.trim(),
-        mobile: _phonenumberController.text.trim(),
-        photo: encodedPhoto ?? AuthController.userModel!.photo,
+      bool success = await context.read<UpdateProfileProvider>().updateProfile(
+        context: context,
+        email: _emailController.text.trim(),
+        firstname: _firstnameController.text.trim(),
+        lastname: _lastnameController.text.trim(),
+        phonenumber: _phonenumberController.text.trim(),
+        password: _passwordController.text.trim().isNotEmpty
+            ? _passwordController.text.trim()
+            : null,
+        image: _selectedImage,
       );
-      await AuthController.updateUserData(model);
-      showSnackbarMessage(context, 'Profile updated successfully');
-    } else {
-      showSnackbarMessage(context, response.errorMessage!);
+
+      if (success) {
+        showSnackbarMessage(context, "Profile updated successfully!");
+        _passwordController.clear();
+      } else {
+        final error = context.read<UpdateProfileProvider>().errorMessage;
+        showSnackbarMessage(
+            context, error.isEmpty ? "Update failed" : error);
+      }
     }
   }
 
   Future<void> _pickImage() async {
-    XFile? pickedImage = await _imagePicker.pickImage(
+    final XFile? pickedImage = await _imagePicker.pickImage(
       source: ImageSource.gallery,
-      maxWidth: 40,
-      maxHeight: 37,
+      maxWidth: 400,
+      maxHeight: 400,
       imageQuality: 70,
     );
 
     if (pickedImage != null) {
-      _selectedImage = pickedImage;
-      setState(() {});
+      setState(() {
+        _selectedImage = pickedImage;
+      });
     }
   }
 
-
   @override
-  dispose() {
+  void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     _firstnameController.dispose();

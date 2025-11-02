@@ -1,5 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:task_manager/Ui/Controllers/add_new_task_provider.dart';
+import 'package:task_manager/Ui/Controllers/auth_controller.dart';
+import 'package:task_manager/Ui/Controllers/progress_task_provider.dart';
 
+import 'Ui/Controllers/all_task_status_count_provider.dart';
+import 'Ui/Controllers/cancelled_task_provider.dart';
+import 'Ui/Controllers/completed_task_provider.dart';
+import 'Ui/Controllers/new_task_provider.dart';
+import 'Ui/Controllers/task_change_status_provider.dart';
+import 'Ui/Controllers/task_delete_provider.dart';
+import 'Ui/Controllers/update_profile_provider.dart';
 import 'Ui/Screen/forget_password_verify_email_screen.dart';
 import 'Ui/Screen/forget_password_verify_otp_screen.dart';
 import 'Ui/Screen/login_screen.dart';
@@ -15,57 +26,73 @@ class TaskManager extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: navigator,
-      theme: ThemeData(
-        textTheme: TextTheme(
-          titleLarge: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.w600,
-          )
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => NewTaskProvider()),
+        ChangeNotifierProvider(create: (context) => AllTaskStatusCountProvider()),
+        ChangeNotifierProvider(create: (context) => AddNewTaskProvider()),
+        ChangeNotifierProvider(create: (context) => TaskChangeStatusProvider()),
+        ChangeNotifierProvider(create: (context) => TaskDeleteProvider()),
+        ChangeNotifierProvider(create: (context) => ProgressTaskProvider()),
+        ChangeNotifierProvider(create: (context) => CancelledTaskProvider()),
+        ChangeNotifierProvider(create: (context) => CompletedTaskProvider()),
+        ChangeNotifierProvider(create: (context) => UpdateProfileProvider()),
+        ChangeNotifierProvider(create: (context) => AuthController()),
+
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        navigatorKey: navigator,
+        theme: ThemeData(
+          textTheme: TextTheme(
+            titleLarge: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w600,
+            )
+          ),
+        colorSchemeSeed: Colors.green,
+          inputDecorationTheme: InputDecorationTheme(
+            fillColor: Colors.white,
+            filled: true,
+            contentPadding: EdgeInsets.symmetric(horizontal: 16),
+            hintStyle: TextStyle(
+                color: Colors.grey
+            ),
+            border: OutlineInputBorder(
+                borderSide: BorderSide.none
+            ),
+            errorBorder:  OutlineInputBorder(
+                borderSide: BorderSide.none
+            ),
+            enabledBorder:  OutlineInputBorder(
+                borderSide: BorderSide.none
+            ),
+
+          ),
+          filledButtonTheme: FilledButtonThemeData(
+            style: FilledButton.styleFrom(
+                backgroundColor: Colors.green,
+                padding: EdgeInsets.symmetric(vertical: 12),
+                fixedSize: Size.fromWidth(double.maxFinite),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)
+                )
+            ),
         ),
-      colorSchemeSeed: Colors.green,
-        inputDecorationTheme: InputDecorationTheme(
-          fillColor: Colors.white,
-          filled: true,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16),
-          hintStyle: TextStyle(
-              color: Colors.grey
-          ),
-          border: OutlineInputBorder(
-              borderSide: BorderSide.none
-          ),
-          errorBorder:  OutlineInputBorder(
-              borderSide: BorderSide.none
-          ),
-          enabledBorder:  OutlineInputBorder(
-              borderSide: BorderSide.none
-          ),
-
         ),
-        filledButtonTheme: FilledButtonThemeData(
-          style: FilledButton.styleFrom(
-              backgroundColor: Colors.green,
-              padding: EdgeInsets.symmetric(vertical: 12),
-              fixedSize: Size.fromWidth(double.maxFinite),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)
-              )
-          ),
+        initialRoute: SplashScreen.name,
+        routes: {
+          SplashScreen.name : (_) => SplashScreen(),
+          LoginScreen.name : (_) => LoginScreen(),
+          SignUpScreen.name : (_) => SignUpScreen(),
+          MainNavBarHolderScreen.name : (_) => MainNavBarHolderScreen(),
+          UpdateProfileScreen.name : (_) => UpdateProfileScreen(),
+          FrogetPasswordVerifyEmailScreen.name : (_) => FrogetPasswordVerifyEmailScreen(),
+
+
+
+        },
       ),
-      ),
-      initialRoute: SplashScreen.name,
-      routes: {
-        SplashScreen.name : (_) => SplashScreen(),
-        LoginScreen.name : (_) => LoginScreen(),
-        SignUpScreen.name : (_) => SignUpScreen(),
-        MainNavBarHolderScreen.name : (_) => MainNavBarHolderScreen(),
-        UpdateProfileScreen.name : (_) => UpdateProfileScreen(),
-        FrogetPasswordVerifyEmailScreen.name : (_) => FrogetPasswordVerifyEmailScreen(),
-
-
-
-      },
     );
   }
 }
