@@ -1,12 +1,14 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:task_manager/Data/Services/api_caller.dart';
 import 'package:task_manager/Ui/Screen/sign_up_screen.dart';
 import 'package:task_manager/Ui/Widgets/screen_background.dart';
 
 import '../../Data/Models/task_model.dart';
 import '../../Data/Utils/urls.dart';
+import '../Controllers/verify_email_provider.dart';
 import '../Widgets/snack_bar_message.dart';
 import 'forget_password_verify_otp_screen.dart';
 
@@ -23,7 +25,7 @@ class _FrogetPasswordVerifyEmailScreenState
     extends State<FrogetPasswordVerifyEmailScreen> {
   final TextEditingController _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool _emailVerifyInProgress = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,13 +64,17 @@ class _FrogetPasswordVerifyEmailScreenState
                     },
                   ),
                   SizedBox(height: 16),
-                  Visibility(
-                    visible: _emailVerifyInProgress == false,
-                    replacement: Center(child: CircularProgressIndicator()),
-                    child: FilledButton(
-                      onPressed: _onTapNextButton,
-                      child: Icon(Icons.arrow_circle_right_outlined, size: 20),
-                    ),
+                  Consumer<VerifyEmailProvider>(
+                    builder: (context, verifyEmailProvider, _) {
+                      return Visibility(
+                        visible: verifyEmailProvider.emailVerifyInProgress == false,
+                        replacement: Center(child: CircularProgressIndicator()),
+                        child: FilledButton(
+                          onPressed: _onTapNextButton,
+                          child: Icon(Icons.arrow_circle_right_outlined, size: 20),
+                        ),
+                      );
+                    }
                   ),
                   SizedBox(height: 36),
                   Center(
@@ -114,28 +120,21 @@ class _FrogetPasswordVerifyEmailScreenState
   }
 
   Future<void> _verifyEmail() async {
-    _emailVerifyInProgress = true;
-    setState(() {});
-    Map<String, dynamic> requestBody = {"email": _emailController.text.trim()};
-    final ApiResponse response = await ApiCaller.getRequest(
-      url: Urls.emailVerifyUrl(_emailController.text.trim()),
+   final bool isSucces = await context.read<VerifyEmailProvider>().verifyEmail(
+      context: context,
+      email: _emailController.text.trim(),
     );
-    _emailVerifyInProgress = false;
-    setState(() {});
-    if (response.isSuccess) {
-      showSnackbarMessage(context, 'OTP sent successfully');
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (context) => FrogetPasswordVerifyOtpScreen(
-            email: _emailController.text.trim(),
-          ),
-        ),
-        (predicate) => false,
-      );
-    } else {
-      showSnackbarMessage(context, response.errorMessage!);
-    }
+   if(isSucces){
+     Navigator.pushAndRemoveUntil(
+       context,
+       MaterialPageRoute(
+         builder: (context) => FrogetPasswordVerifyOtpScreen(email: _emailController.text.trim()),
+       ),
+           (route) => false,
+     );
+   } else {
+     showSnackbarMessage(context, context.read<VerifyEmailProvider>().errorMessage);
+     }
   }
 
   dispose() {

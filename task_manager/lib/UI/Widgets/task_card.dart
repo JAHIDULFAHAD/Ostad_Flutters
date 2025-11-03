@@ -54,7 +54,7 @@ class _TaskCardState extends State<TaskCard> {
                         replacement: CircularProgressIndicator(),
                         child: IconButton(
                           onPressed: () {
-                            _deleteStatus(context);
+                            _deleteStatus();
                           },
                           icon: Icon(Icons.delete),
                           color: Colors.grey,
@@ -150,8 +150,11 @@ class _TaskCardState extends State<TaskCard> {
       showSnackbarMessage(context, context.read<TaskChangeStatusProvider>().errorMessage);
     }
   }
-  Future<void> _deleteStatus(context) async {
-    bool isSucces = await context.read<TaskDeleteProvider>().deleteStatus(widget.taskModel.id);
+  Future<void> _deleteStatus() async {
+    bool isSucces = await context.read<TaskDeleteProvider>().deleteStatus(
+      context: context,
+      id: widget.taskModel.id,
+    );
     if(isSucces){
       widget.refreshParent();
     } else {

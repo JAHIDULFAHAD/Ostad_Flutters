@@ -1,12 +1,14 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:provider/provider.dart';
 import 'package:task_manager/Data/Services/api_caller.dart';
 import 'package:task_manager/Ui/Screen/login_screen.dart';
 import 'package:task_manager/Ui/Screen/sign_up_screen.dart';
 import 'package:task_manager/Ui/Widgets/screen_background.dart';
 
 import '../../Data/Utils/urls.dart';
+import '../Controllers/reset_password_provider.dart';
 import '../Widgets/snack_bar_message.dart';
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key, required this.email, required this.otp});
@@ -22,7 +24,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmpasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool _changePasswordInProgress = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,14 +79,18 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     SizedBox(
                       height: 16,
                     ),
-                    Visibility(
-                      visible: _changePasswordInProgress == false,
-                      replacement: Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                      child: FilledButton(onPressed: _onTapConfirmButton,
-                        child: Text('Confirm'),
-                      ),
+                    Consumer<ResetPasswordProvider>(
+                      builder: (context, provider, _) {
+                        return Visibility(
+                          visible: provider.resetPasswordInProgress == false,
+                          replacement: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                          child: FilledButton(onPressed: _onTapConfirmButton,
+                            child: Text('Confirm'),
+                          ),
+                        );
+                      }
                     ),
                     SizedBox(
                       height: 36,
@@ -122,27 +128,17 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     }
   }
   Future<void> _changePassword() async {
-    _changePasswordInProgress=true;
-    setState(() {
-    });
-    Map<String,dynamic> requestBody={
-      "email":widget.email,
-      "OTP":widget.otp,
-      "password": _passwordController.text.trim(),
-    };
-    final ApiResponse response = await ApiCaller.postRequest(
-      url: Urls.changePasswordUrl,
-      body: requestBody,
+    final bool isSuccess = await context.read<ResetPasswordProvider>().changePassword(
+      context: context,
+      email: widget.email,
+      otp: widget.otp,
+      password: _passwordController.text.trim(),
     );
-    _changePasswordInProgress=false;
-    setState(() {
-    });
-
-    if(response.isSuccess){
+    if(isSuccess){
       showSnackbarMessage(context, 'Password changed successfully');
       Navigator.pushReplacementNamed(context, LoginScreen.name,);
     }else {
-      showSnackbarMessage(context, response.errorMessage!);
+      showSnackbarMessage(context, context.read<ResetPasswordProvider>().errorMessage);
     }
   }
   dispose(){

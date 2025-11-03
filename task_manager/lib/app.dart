@@ -3,14 +3,18 @@ import 'package:provider/provider.dart';
 import 'package:task_manager/Ui/Controllers/add_new_task_provider.dart';
 import 'package:task_manager/Ui/Controllers/auth_controller.dart';
 import 'package:task_manager/Ui/Controllers/progress_task_provider.dart';
+import 'package:task_manager/Ui/Controllers/sign_up_provider.dart';
 
 import 'Ui/Controllers/all_task_status_count_provider.dart';
 import 'Ui/Controllers/cancelled_task_provider.dart';
 import 'Ui/Controllers/completed_task_provider.dart';
 import 'Ui/Controllers/new_task_provider.dart';
+import 'Ui/Controllers/reset_password_provider.dart';
 import 'Ui/Controllers/task_change_status_provider.dart';
 import 'Ui/Controllers/task_delete_provider.dart';
 import 'Ui/Controllers/update_profile_provider.dart';
+import 'Ui/Controllers/verify_email_provider.dart';
+import 'Ui/Controllers/verify_otp_provider.dart';
 import 'Ui/Screen/forget_password_verify_email_screen.dart';
 import 'Ui/Screen/forget_password_verify_otp_screen.dart';
 import 'Ui/Screen/login_screen.dart';
@@ -38,7 +42,10 @@ class TaskManager extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => CompletedTaskProvider()),
         ChangeNotifierProvider(create: (context) => UpdateProfileProvider()),
         ChangeNotifierProvider(create: (context) => AuthController()),
-
+        ChangeNotifierProvider(create: (context) => SignUpProvider()),
+        ChangeNotifierProvider(create: (context) => VerifyEmailProvider()),
+        ChangeNotifierProvider(create: (context) => VerifyOtpProvider()),
+        ChangeNotifierProvider(create: (context) => ResetPasswordProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

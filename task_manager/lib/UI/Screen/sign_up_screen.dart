@@ -1,11 +1,13 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:task_manager/Data/Services/api_caller.dart';
 import 'package:task_manager/Data/Utils/urls.dart';
 import 'package:task_manager/Ui/Widgets/screen_background.dart';
 import 'package:task_manager/Ui/Widgets/snack_bar_message.dart';
 
+import '../Controllers/sign_up_provider.dart';
 import 'login_screen.dart';
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -22,7 +24,6 @@ class _LoginScreenState extends State<SignUpScreen> {
   final TextEditingController _lastnameController = TextEditingController();
   final TextEditingController _phonenumberController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool _signUpInProgress = false;
 
   @override
   Widget build(BuildContext context) {
@@ -118,14 +119,18 @@ class _LoginScreenState extends State<SignUpScreen> {
                     SizedBox(
                       height: 16,
                     ),
-                    Visibility(
-                      visible: _signUpInProgress == false,
-                      replacement: Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                      child: FilledButton(onPressed: _onTapSubmitButton,
-                          child: Icon(Icons.arrow_circle_right_outlined,size: 20,)
-                      ),
+                    Consumer<SignUpProvider>(
+                      builder: (context, provider, _) {
+                        return Visibility(
+                          visible: provider.signUpInProgress == false,
+                          replacement: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                          child: FilledButton(onPressed: _onTapSubmitButton,
+                              child: Icon(Icons.arrow_circle_right_outlined,size: 20,)
+                          ),
+                        );
+                      }
                     ),
                     SizedBox(
                       height: 36,
@@ -163,30 +168,19 @@ class _LoginScreenState extends State<SignUpScreen> {
         LoginScreen.name,(Prediacte)=>false,);
   }
   Future<void> _signUp() async {
-    _signUpInProgress=true;
-    setState(() {
-    });
-    Map<String,dynamic> requestBody={
-      "email":_emailController.text.trim(),
-      "firstName":_firstnameController.text.trim(),
-      "lastName":_lastnameController.text.trim(),
-      "mobile":_phonenumberController.text.trim(),
-      "password":_passwordController.text
-    };
-    final ApiResponse response =await ApiCaller.postRequest(
-      url: Urls.registrationUrl,
-      body: requestBody
+    final bool isSucces = await context.read<SignUpProvider>().signUp(
+      email: _emailController.text.trim(),
+      firstName: _firstnameController.text.trim(),
+      lastName: _lastnameController.text.trim(),
+      mobile: _phonenumberController.text.trim(),
+      password: _passwordController.text.trim(),
     );
-    _signUpInProgress =false;
-    setState(() {
-    });
-    if(response.isSuccess){
+    if(isSucces){
       _clearTextFields();
-      showSnackbarMessage(context, 'Registration success! Please login.');
-    } else{
-      showSnackbarMessage(context, response.errorMessage!);
+      showSnackbarMessage(context, 'Registration successful');
+    }else {
+      showSnackbarMessage(context, context.read<SignUpProvider>().errorMessage);
     }
-
   }
   void _clearTextFields(){
     _emailController.clear();

@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:provider/provider.dart';
 import 'package:task_manager/Data/Services/api_caller.dart';
 import 'package:task_manager/Ui/Screen/login_screen.dart';
 import 'package:task_manager/Ui/Screen/reset_password_screen.dart';
@@ -8,6 +9,7 @@ import 'package:task_manager/Ui/Screen/sign_up_screen.dart';
 import 'package:task_manager/Ui/Widgets/screen_background.dart';
 
 import '../../Data/Utils/urls.dart';
+import '../Controllers/verify_otp_provider.dart';
 import '../Widgets/snack_bar_message.dart';
 
 class FrogetPasswordVerifyOtpScreen extends StatefulWidget {
@@ -24,7 +26,7 @@ class _FrogetPasswordVerifyOtpScreenState
     extends State<FrogetPasswordVerifyOtpScreen> {
   final TextEditingController _otpController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool _otpVerifyInProgress = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,13 +77,17 @@ class _FrogetPasswordVerifyOtpScreenState
                     },
                   ),
                   SizedBox(height: 16),
-                  Visibility(
-                    visible: _otpVerifyInProgress == false,
-                    replacement: Center(child: CircularProgressIndicator()),
-                    child: FilledButton(
-                      onPressed: _onTapVerifyButton,
-                      child: Text('Verify'),
-                    ),
+                  Consumer<VerifyOtpProvider>(
+                    builder: (context, verifyOtpProvider, _) {
+                      return Visibility(
+                        visible: verifyOtpProvider.otpVerifyInProgress == false,
+                        replacement: Center(child: CircularProgressIndicator()),
+                        child: FilledButton(
+                          onPressed: _onTapVerifyButton,
+                          child: Text('Verify'),
+                        ),
+                      );
+                    }
                   ),
                   SizedBox(height: 36),
                   Center(
@@ -131,32 +137,25 @@ class _FrogetPasswordVerifyOtpScreenState
   }
 
   Future<void> _verifyOtp() async {
-    _otpVerifyInProgress = true;
-    setState(() {});
-    Map<String, dynamic> requestBody = {
-      "email": widget.email,
-      "otp": _otpController.text.trim(),
-    };
-    final ApiResponse response = await ApiCaller.getRequest(
-      url: Urls.otpVerifyUrl(widget.email, _otpController.text.trim()),
+    final bool isSucces = await context.read<VerifyOtpProvider>().verifyOtp(
+      context: context,
+      email: widget.email,
+      otp: _otpController.text.trim(),
     );
-    _otpVerifyInProgress = false;
-    setState(() {});
-
-    if (response.isSuccess) {
+    if (isSucces) {
       showSnackbarMessage(context, 'OTP verified successfully');
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
           builder: (context) => ResetPasswordScreen(
             email: widget.email,
-            otp: _otpController.text,
+            otp: _otpController.text.trim(),
           ),
         ),
-        (predicate) => false,
+            (route) => false,
       );
     } else {
-      showSnackbarMessage(context, response.errorMessage!);
+      showSnackbarMessage(context, context.read<VerifyOtpProvider>().errorMessage);
     }
   }
 
