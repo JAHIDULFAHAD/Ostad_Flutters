@@ -27,35 +27,36 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
             spacing: 8,
             children: [
               TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'Student Name'),
-                  validator: (String? value) {
-                    if (value!.trim().isEmpty == true) {
-                      return 'Please enter name';
-                    }
-                    return null;
+                controller: _nameController,
+                decoration: const InputDecoration(labelText: 'Student Name'),
+                validator: (String? value) {
+                  if (value!.trim().isEmpty == true) {
+                    return 'Please enter name';
                   }
+                  return null;
+                },
               ),
               TextFormField(
-                  controller: _idController,
-                  decoration: const InputDecoration(labelText: 'Student Id'),
-                  validator: (String? value) {
-                    if (value!.trim().isEmpty == true) {
-                      return 'Please enter id';
-                    }
-                    return null;
+                controller: _idController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: 'Student Id'),
+                validator: (String? value) {
+                  if (value!.trim().isEmpty == true ||
+                      int.tryParse(value) == null) {
+                    return 'Please enter Valid id Number';
                   }
+                  return null;
+                },
               ),
               TextFormField(
-                  controller: _courseController,
-                  decoration: const InputDecoration(
-                      labelText: 'Student Crouse'),
-                  validator: (String? value) {
-                    if (value!.trim().isEmpty == true) {
-                      return 'Please enter course';
-                    }
-                    return null;
+                controller: _courseController,
+                decoration: const InputDecoration(labelText: 'Student Crouse'),
+                validator: (String? value) {
+                  if (value!.trim().isEmpty == true) {
+                    return 'Please enter course';
                   }
+                  return null;
+                },
               ),
               FilledButton(
                 onPressed: () {
@@ -70,18 +71,33 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     );
   }
 
-  void _addStudent() {
+  void _addStudent() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
-    FirebaseFirestore.instance.collection('students').doc().set({
-      'name': _nameController.text,
-      'roll_Number': int.parse(_idController.text),
-      'course': _courseController.text,
-    });
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Student Added')),
-    );
+
+    try {
+      await FirebaseFirestore.instance.collection('students').doc().set({
+        'name': _nameController.text,
+        'roll_Number': int.parse(_idController.text),
+        'course': _courseController.text,
+      });
+
+      Navigator.pop(context);
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Student Added')));
+    } catch (e) {
+      String message = "Something went wrong! Please try again.";
+      if (e.toString().contains("invalid-argument")) {
+        message = "Invalid data format!";
+      } else if (e.toString().contains("not-found")) {
+        message = "Collection not found!";
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    }
   }
 }

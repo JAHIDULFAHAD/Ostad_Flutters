@@ -32,8 +32,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 Student(
                   id: doc.id,
                   name: doc['name'],
-                  student_id: doc['roll_Number'],
-                  department: doc['course'],
+                  roll_Number: doc['roll_Number'],
+                  course: doc['course'],
                 ),
               );
             }
@@ -46,9 +46,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(height: 5,),
-                      Text('Id:- ${_studentList[index].student_id}'),
+                      Text('Roll Number:- ${_studentList[index].roll_Number}'),
                       SizedBox(height: 5),
-                      Text('Department:- ${_studentList[index].department}'),
+                      Text('Crouse:- ${_studentList[index].course}'),
                     ],
                   ),
                 );
