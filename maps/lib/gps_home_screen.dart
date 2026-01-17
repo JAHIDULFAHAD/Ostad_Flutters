@@ -11,29 +11,6 @@ class _GpsHomeScreenState extends State<GpsHomeScreen> {
   Position? _currentPosition;
 
   Future<void> _getCurrentLocation() async {
-    // // access permission given or not
-    // LocationPermission permissionStatus = await Geolocator.checkPermission();
-    // if (_isPermissionGranted(permissionStatus)) {
-    //   // GPS service enable
-    //   bool isServiceEnabled = await Geolocator.isLocationServiceEnabled();
-    //   if (isServiceEnabled) {
-    //     // Get current location
-    //     _currentPosition = await Geolocator.getCurrentPosition();
-    //     print(_currentPosition);
-    //     setState(() {});
-    //   } else {
-    //     // -> Request service
-    //     Geolocator.openLocationSettings();
-    //   }
-    // } else {
-    //   // -> Request location permission
-    //   LocationPermission permissionStatus =
-    //       await Geolocator.requestPermission();
-    //   if (_isPermissionGranted(permissionStatus)) {
-    //     // Call this method again
-    //     _getCurrentLocation();
-    //   }
-    // }
     await _handleLocationPermission(() async {
       _currentPosition = await Geolocator.getCurrentPosition();
       print(_currentPosition);
@@ -42,31 +19,6 @@ class _GpsHomeScreenState extends State<GpsHomeScreen> {
   }
 
   Future<void> _listenCurrentLocation() async {
-    // // access permission given or not
-    // LocationPermission permissionStatus = await Geolocator.checkPermission();
-    // if (_isPermissionGranted(permissionStatus)) {
-    //   // GPS service enable
-    //   bool isServiceEnabled = await Geolocator.isLocationServiceEnabled();
-    //   if (isServiceEnabled) {
-    //     // Listen current location
-    //     Geolocator.getPositionStream().listen((position) {
-    //       _currentPosition = position;
-    //       setState(() {});
-    //     });
-    //   } else {
-    //     // -> Request service
-    //     Geolocator.openLocationSettings();
-    //   }
-    // } else {
-    //   // -> Request location permission
-    //   LocationPermission permissionStatus =
-    //   await Geolocator.requestPermission();
-    //   if (_isPermissionGranted(permissionStatus)) {
-    //     // Call this method again
-    //     _getCurrentLocation();
-    //   }
-    // }
-
     await _handleLocationPermission(() {
       Geolocator.getPositionStream().listen((position) {
         _currentPosition = position;
