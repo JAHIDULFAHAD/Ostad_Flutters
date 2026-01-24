@@ -1,5 +1,7 @@
 import 'package:crafty_bay/core/services/network_caller.dart';
 
+import '../features/auth/presentation/providers/auth_controller.dart';
+
 NetworkCaller getNetworkCaller() {
   NetworkCaller networkCaller = NetworkCaller(
     onUnauthorize: () {
@@ -7,7 +9,7 @@ NetworkCaller getNetworkCaller() {
     },
     headers: {
       'content-type': 'application/json',
-      'token': 'token'
+      'token': AuthController.accessToken ?? '',
     },
   );
   return networkCaller;

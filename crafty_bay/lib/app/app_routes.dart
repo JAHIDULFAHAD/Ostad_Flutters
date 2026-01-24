@@ -5,6 +5,7 @@ import '../features/auth/presentation/screens/sign_in_screen.dart';
 import '../features/auth/presentation/screens/sign_up_screen.dart';
 import '../features/auth/presentation/screens/splash_screen.dart';
 import '../features/auth/presentation/screens/verify_otp_screen.dart';
+import '../features/category/data/models/category_model.dart';
 import '../features/common/presentation/screens/main_nav_holder_screen.dart';
 import '../features/product/presentation/screens/product_details_screen.dart';
 
@@ -18,13 +19,16 @@ class AppRoutes{
     } else if(settings.name == SignInScreen.name){
       widget = SignInScreen();
     } else if(settings.name == VerifyOtpScreen.name){
-      widget = VerifyOtpScreen();
+      final email = settings.arguments as String;
+      widget = VerifyOtpScreen(email:email,);
     } else if(settings.name == MainNavHolderScreen.name){
       widget = MainNavHolderScreen();
     } else if(settings.name == ProductListByCategoryScreen.name){
-      widget = ProductListByCategoryScreen();
+      final categoryModel = settings.arguments as CategoryModel;
+      widget = ProductListByCategoryScreen(categoryModel: categoryModel,);
     } else if(settings.name == ProductDetailsScreen.name){
-      widget = ProductDetailsScreen();
+      final productId = settings.arguments as String;
+      widget = ProductDetailsScreen( productId: productId,);
     }
     return MaterialPageRoute(builder: (ctx) => widget);
   }

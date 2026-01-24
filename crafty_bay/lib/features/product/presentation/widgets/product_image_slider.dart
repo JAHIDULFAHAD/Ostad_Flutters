@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/app_colors.dart';
 class ProductImageSlider extends StatefulWidget {
-  const ProductImageSlider({super.key});
+  const ProductImageSlider({super.key, required this.imagesUrls});
+  final List<String> imagesUrls;
 
   @override
   State<ProductImageSlider> createState() => _ProductImageSliderState();
@@ -23,14 +24,19 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
               },
               autoPlay: true
           ),
-          items: [1,2,3,4,5].map((i) {
+          items: widget.imagesUrls.map((i) {
             return Builder(
               builder: (BuildContext context) {
                 return Container(
                     width: MediaQuery.of(context).size.width,
-                    color: Colors.grey.withAlpha(50),
                     alignment: Alignment.center,
-                    child: Text('image $i', style: TextStyle(fontSize: 16.0),)
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withAlpha(50),
+                      image: DecorationImage(
+                        image: NetworkImage(i),
+                        fit: BoxFit.fitHeight,
+                      ),
+                    ),
                 );
               },
             );
@@ -47,7 +53,7 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    for(int i=0;i<5;i++)
+                    for(int i=0;i<widget.imagesUrls.length;i++)
                       Container(
                           width: 12,
                           height: 12,

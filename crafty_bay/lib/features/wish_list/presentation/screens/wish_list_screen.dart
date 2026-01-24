@@ -34,7 +34,7 @@ class _WishListScreenState extends State<WishListScreen> {
               ),
               itemCount: 10,
               itemBuilder: (context,index) {
-                return FittedBox(child: ProductCard());
+                // return FittedBox(child: ProductCard());
               }
           ),
         ),

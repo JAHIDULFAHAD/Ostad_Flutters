@@ -86,7 +86,7 @@ class NetworkCaller {
         responseCode: statusCode,
         responseData: decodeData,
         errorMessage: decodeData != null
-            ? decodeData['data']
+            ? decodeData['msg']
             : 'Something went wrong',
       );
     }

@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import '../../../../app/app_colors.dart';
 
 class IncDecButton extends StatefulWidget {
-  const IncDecButton({super.key, required this.onChange});
+  const IncDecButton({super.key, required this.onChange, this.maxValue = 100});
   final Function(int) onChange;
+  final int maxValue;
+
 
   @override
   State<IncDecButton> createState() => _IncDecButtonState();
@@ -38,9 +40,11 @@ class _IncDecButtonState extends State<IncDecButton> {
         Text('$_count', style: TextTheme.of(context).titleLarge),
         GestureDetector(
           onTap: () {
-            _count++;
-            widget.onChange(_count);
-            setState(() {});
+            if(widget.maxValue > _count) {
+              _count++;
+              widget.onChange(_count);
+              setState(() {});
+            }
           },
           child: Container(
             padding: EdgeInsets.all(4),
